@@ -41,7 +41,7 @@ const crear = (req, res) => {
     // Validar los datos
     try {
 
-        let validar_titulo = !validator.isEmpty(parametros.titulo) && validator.isLength(parametros.titulo, {min: 5, max: undefined});
+        let validar_titulo = !validator.isEmpty(parametros.titulo) && validator.isLength(parametros.titulo, { min: 5, max: undefined });
         let validar_contenido = !validator.isEmpty(parametros.contenido);
 
         if (!validar_titulo || !validar_contenido) {
@@ -52,7 +52,7 @@ const crear = (req, res) => {
         return res.status(400).json({
             status: "error",
             mensaje: "Faltan datos por enviar"
-        })
+        });
     }
 
     // Crear el objeto a guardar
@@ -97,8 +97,35 @@ const crear = (req, res) => {
 
 }
 
+const listar = (req, res) => {
+    Articulo.find({})
+    .then((articulos) => {
+      if (!articulos) {
+        return res.status(404).json({
+          status: "error",
+          mensaje: "No se han encontrado articulos",
+        });
+      }
+
+      return res.status(200).send({
+        status: "success",
+        articulos,
+      });
+    })
+    .catch((error) => {
+      return res.status(500).json({
+        status: "error",
+        mensaje: "Ha ocurrido un error al listar los articulos",
+        error: error.message,
+      });
+    });
+
+
+}
+
 module.exports = {
     prueba,
     curso,
-    crear
+    crear,
+    listar
 }

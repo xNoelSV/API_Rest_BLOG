@@ -25,7 +25,7 @@ const rutas_articulo = require("./rutas/articulo");
 // Cargo las rutas
 app.use("/api", rutas_articulo)
 
-// Rutas prueba hardcodeadas
+/* Rutas prueba hardcodeadas
 app.get("/probando", (req, res) => {
     console.log("Se ha ejecutado el endpoint \"probando\"");
     return res.status(200).json([{
@@ -50,7 +50,7 @@ app.get("/probando", (req, res) => {
         </div>
     `
     */
-});
+//});
 
 app.get("/", (req, res) => {
     return res.status(200).send(
