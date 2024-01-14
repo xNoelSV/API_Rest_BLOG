@@ -98,28 +98,35 @@ const crear = (req, res) => {
 }
 
 const listar = (req, res) => {
-    Articulo.find({})
-    .then((articulos) => {
-      if (!articulos) {
-        return res.status(404).json({
-          status: "error",
-          mensaje: "No se han encontrado articulos",
-        });
-      }
+    let consulta = Articulo.find({});
 
-      return res.status(200).send({
-        status: "success",
-        articulos,
-      });
+    if (req.params.ultimos) {
+        consulta.limit(3);
+    }
+
+    consulta.sort({
+        fecha: -1
+    })
+    .then((articulos) => {
+        if (!articulos) {
+            return res.status(404).json({
+                status: "error",
+                mensaje: "No se han encontrado articulos",
+            });
+        }
+        return res.status(200).send({
+            status: "success",
+            contador: articulos.length,
+            articulos,
+        });
     })
     .catch((error) => {
-      return res.status(500).json({
-        status: "error",
-        mensaje: "Ha ocurrido un error al listar los articulos",
-        error: error.message,
-      });
+        return res.status(500).json({
+            status: "error",
+            mensaje: "Ha ocurrido un error al listar los articulos",
+            error: error.message,
+        });
     });
-
 
 }
 
