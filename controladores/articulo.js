@@ -115,7 +115,7 @@ const listar = (req, res) => {
             });
         }
         return res.status(200).send({
-            status: "success",
+            status: "success, data recived",
             contador: articulos.length,
             articulos,
         });
