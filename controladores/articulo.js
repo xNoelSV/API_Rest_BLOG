@@ -100,39 +100,69 @@ const crear = (req, res) => {
 const listar = (req, res) => {
     let consulta = Articulo.find({});
 
-    if (req.params.ultimos) {
-        consulta.limit(3);
+    if (req.params.ultimos == 1) {
+        consulta.limit(1);
     }
 
     consulta.sort({
         fecha: -1
     })
-    .then((articulos) => {
-        if (!articulos) {
-            return res.status(404).json({
+        .then((articulos) => {
+            if (!articulos) {
+                return res.status(404).json({
+                    status: "error",
+                    mensaje: "No se han encontrado articulos",
+                });
+            }
+            return res.status(200).send({
+                status: "success, data recived",
+                contador: articulos.length,
+                articulos,
+            });
+        })
+        .catch((error) => {
+            return res.status(500).json({
                 status: "error",
-                mensaje: "No se han encontrado articulos",
+                mensaje: "Ha ocurrido un error al listar los articulos",
+                error: error.message,
+            });
+        });
+
+}
+
+const uno = (res, req) => {
+    // Recoger un id por la url
+    let id = req.params.id;
+
+    // Buscar artículo
+    Articulo.findById(id)
+    .then((articulo) => {
+        // Si no existe, devolver error
+        if (!articulo) {
+            return res.status(400).json({
+                status: "Error",
+                mensaje: "No se ha encontrado el artículo",
             });
         }
-        return res.status(200).send({
-            status: "success, data recived",
-            contador: articulos.length,
-            articulos,
+
+        // Devolver resultado
+        return res.status(200).json({
+            status: "Success",
+            articulo,
         });
     })
     .catch((error) => {
-        return res.status(500).json({
-            status: "error",
-            mensaje: "Ha ocurrido un error al listar los articulos",
-            error: error.message,
+        return res.status(400).json({
+            status: "Error",
+            mensaje: "Ha ocurrido un error al buscar el artículo",
         });
     });
-
 }
 
 module.exports = {
     prueba,
     curso,
     crear,
-    listar
+    listar,
+    uno
 }
