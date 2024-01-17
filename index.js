@@ -58,7 +58,6 @@ app.get("/", (req, res) => {
     );
 });
 
-
 // Crear servidor y escuchar peticiones http
 app.listen(puerto, () => {
     console.log("Servidor corriendo en el puerto " + puerto);

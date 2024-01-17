@@ -130,14 +130,12 @@ const listar = (req, res) => {
 
 }
 
-const uno = (res, req) => {
+const uno = (req, res) => {
     // Recoger un id por la url
     let id = req.params.id;
-    console.log(id);
-
-    /*
+    
     // Buscar artículo
-    Articulo.find(id)
+    Articulo.findById(id)
     .then((articulo) => {
         // Si no existe, devolver error
         if (!articulo) {
@@ -158,7 +156,7 @@ const uno = (res, req) => {
             status: "Error",
             mensaje: "Ha ocurrido un error al buscar el artículo",
         });
-    });*/
+    });
 }
 
 module.exports = {
