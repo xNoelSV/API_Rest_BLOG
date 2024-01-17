@@ -132,14 +132,14 @@ const listar = (req, res) => {
 
 const uno = (req, res) => {
     // Recoger un id por la url
-    let id = req.params.id;
+    let articuloId = req.params.id;
     
     // Buscar artículo
-    Articulo.findById(id)
+    Articulo.findById(articuloId)
     .then((articulo) => {
         // Si no existe, devolver error
         if (!articulo) {
-            return res.status(400).json({
+            return res.status(500).json({
                 status: "Error",
                 mensaje: "No se ha encontrado el artículo",
             });
@@ -159,10 +159,93 @@ const uno = (req, res) => {
     });
 }
 
+const borrar = (req, res) => {
+
+    // Obtenemos una id por parámetro
+    let articuloId = req.params.id;
+
+    // Buscamos el objeto por su ID y lo borramos de la base de datos
+    Articulo.findOneAndDelete({_id: articuloId})
+    .then((articuloBorrado) => {
+        if (!articuloBorrado) {
+            return res.status(500).json({
+                status: "Error",
+                mensaje: "No se ha encontrado el artículo",
+            });
+        }
+
+        return res.status(200).json({
+            status: "Success",
+            articulo: articuloBorrado,
+            mensaje: "Método de borrar"
+        });
+    })
+    .catch((error) => {
+        return res.status(400).json({
+            status: "Error",
+            mensaje: "Ha ocurrido un error al buscar el artículo",
+        });
+    });
+}
+
+const editar = (req, res) => {
+    
+    // Recoger id del cliente a editar
+    let articuloId = req.params.id;
+ 
+    // Recoger datos del body
+    let parametros = req.body; 
+
+    // Validar datos
+    try {
+
+        let validar_titulo = !validator.isEmpty(parametros.titulo) && validator.isLength(parametros.titulo, { min: 5, max: undefined });
+        let validar_contenido = !validator.isEmpty(parametros.contenido);
+
+        if (!validar_titulo || !validar_contenido) {
+            throw new Error("No se ha validado la información!!");
+        }
+
+    } catch (error) {
+        return res.status(400).json({
+            status: "error",
+            mensaje: "Faltan datos por enviar"
+        });
+    }
+
+    // Buscar y actualizar artículo
+    Articulo.findOneAndUpdate({_id: articuloId}, req.body, {new: true})
+    .then((articuloActualizado) => {
+
+        // Si no se encuentran articulos
+        if (!articuloActualizado) {
+            return res.status(500).json({
+                status: "Error",
+                mensaje: "No se ha encontrado el artículo",
+            });
+        }
+
+        // Devolver respuesta
+        return res.status(200).json({
+            status: "Success",
+            articulo: articuloActualizado 
+        })
+    })
+    .catch((error) => {
+        return res.status(400).json({
+            status: "Error",
+            mensaje: error.toString(),
+        });
+    });
+
+}
+
 module.exports = {
     prueba,
     curso,
     crear,
     listar,
-    uno
+    uno,
+    borrar,
+    editar
 }
