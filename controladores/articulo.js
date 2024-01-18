@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const { validarArticulo } = require("../helpers/validar");
 const Articulo = require("../modelos/Articulo");
 
@@ -291,7 +292,38 @@ const subir = (req, res) => {
     }
 }
 
+const imagen = (req, res) => {
+    let id = req.params.fichero;
 
+    Article.findById(id)
+        .then((articulo) => {
+            if (error || !article) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "No existe el articulo"
+                });
+            }
+
+            let filePath = "./imagenes/articulos/" + articulo.imagen;
+
+            fs.stat(filePath, (error, exists) => {
+                if (exists) {
+                    return res.sendFile(path.resolve(filePath));
+                } else {
+                    return res.status(404).json({
+                        status: "error",
+                        mensaje: "La imagen no existe"
+                    });
+                }
+            });
+        })
+        .catch((error) => {
+            return res.status(404).json({
+                status: "error",
+                mensaje: "La imagen no existe"
+            });
+        });
+}
 
 module.exports = {
     prueba,
@@ -301,5 +333,6 @@ module.exports = {
     uno,
     borrar,
     editar,
-    subir
+    subir,
+    imagen
 }
