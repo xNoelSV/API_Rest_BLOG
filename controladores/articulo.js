@@ -1,3 +1,4 @@
+const fs = require("fs");
 const { validarArticulo } = require("../helpers/validar");
 const Articulo = require("../modelos/Articulo");
 
@@ -126,30 +127,30 @@ const listar = (req, res) => {
 const uno = (req, res) => {
     // Recoger un id por la url
     let articuloId = req.params.id;
-    
+
     // Buscar artículo
     Articulo.findById(articuloId)
-    .then((articulo) => {
-        // Si no existe, devolver error
-        if (!articulo) {
-            return res.status(500).json({
-                status: "Error",
-                mensaje: "No se ha encontrado el artículo",
-            });
-        }
+        .then((articulo) => {
+            // Si no existe, devolver error
+            if (!articulo) {
+                return res.status(500).json({
+                    status: "Error",
+                    mensaje: "No se ha encontrado el artículo",
+                });
+            }
 
-        // Devolver resultado
-        return res.status(200).json({
-            status: "Success",
-            articulo,
+            // Devolver resultado
+            return res.status(200).json({
+                status: "Success",
+                articulo,
+            });
+        })
+        .catch((error) => {
+            return res.status(400).json({
+                status: "Error",
+                mensaje: "Ha ocurrido un error al buscar el artículo",
+            });
         });
-    })
-    .catch((error) => {
-        return res.status(400).json({
-            status: "Error",
-            mensaje: "Ha ocurrido un error al buscar el artículo",
-        });
-    });
 }
 
 const borrar = (req, res) => {
@@ -158,36 +159,36 @@ const borrar = (req, res) => {
     let articuloId = req.params.id;
 
     // Buscamos el objeto por su ID y lo borramos de la base de datos
-    Articulo.findOneAndDelete({_id: articuloId})
-    .then((articuloBorrado) => {
-        if (!articuloBorrado) {
-            return res.status(500).json({
-                status: "Error",
-                mensaje: "No se ha encontrado el artículo",
-            });
-        }
+    Articulo.findOneAndDelete({ _id: articuloId })
+        .then((articuloBorrado) => {
+            if (!articuloBorrado) {
+                return res.status(500).json({
+                    status: "Error",
+                    mensaje: "No se ha encontrado el artículo",
+                });
+            }
 
-        return res.status(200).json({
-            status: "Success",
-            articulo: articuloBorrado,
-            mensaje: "Método de borrar"
+            return res.status(200).json({
+                status: "Success",
+                articulo: articuloBorrado,
+                mensaje: "Método de borrar"
+            });
+        })
+        .catch((error) => {
+            return res.status(400).json({
+                status: "Error",
+                mensaje: "Ha ocurrido un error al buscar el artículo",
+            });
         });
-    })
-    .catch((error) => {
-        return res.status(400).json({
-            status: "Error",
-            mensaje: "Ha ocurrido un error al buscar el artículo",
-        });
-    });
 }
 
 const editar = (req, res) => {
-    
+
     // Recoger id del cliente a editar
     let articuloId = req.params.id;
- 
+
     // Recoger datos del body
-    let parametros = req.body; 
+    let parametros = req.body;
 
     // Validar datos
     try {
@@ -200,35 +201,97 @@ const editar = (req, res) => {
     }
 
     // Buscar y actualizar artículo
-    Articulo.findOneAndUpdate({_id: articuloId}, req.body, {new: true})
-    .then((articuloActualizado) => {
+    Articulo.findOneAndUpdate({ _id: articuloId }, req.body, { new: true })
+        .then((articuloActualizado) => {
 
-        // Si no se encuentran articulos
-        if (!articuloActualizado) {
-            return res.status(500).json({
-                status: "Error",
-                mensaje: "No se ha encontrado el artículo",
-            });
-        }
+            // Si no se encuentran articulos
+            if (!articuloActualizado) {
+                return res.status(500).json({
+                    status: "Error",
+                    mensaje: "No se ha encontrado el artículo",
+                });
+            }
 
-        // Devolver respuesta
-        return res.status(200).json({
-            status: "Success",
-            articulo: articuloActualizado 
+            // Devolver respuesta
+            return res.status(200).json({
+                status: "Success",
+                articulo: articuloActualizado
+            })
         })
-    })
-    .catch((error) => {
-        return res.status(400).json({
-            status: "Error",
-            mensaje: error.toString(),
+        .catch((error) => {
+            return res.status(400).json({
+                status: "Error",
+                mensaje: error.toString(),
+            });
         });
-    });
 
 }
 
-subir: (req, res) => {
-    
+const subir = (req, res) => {
+
+    // Configurar multer
+
+    // Recoger el fichero de imagen subido
+    if (!req.file && !req.files) {
+        return res.status(404).json({
+            status: "error",
+            mensaje: "Petición invalida"
+        })
+    }
+    console.log(req.file);
+
+    // Nombre de la imagen
+    let archivo = req.file.originalname;
+
+    // Extensión del archivo
+    let archivo_split = archivo.split("\.");
+    let archivo_extension = archivo_split[1];
+
+    // Comprobar extensión correcta
+    if (archivo_extension != "png" && archivo_extension != "jpg" && archivo_extension != "jpeg" && archivo_extension != "gif") {
+
+        // Borrar archivo y dar respuesta
+        fs.unlink(req.file.path, (error) => {
+            return res.status(400).json({
+                status: "error",
+                mensaje: "Imagen invalida"
+            })
+        })
+
+    } else {
+
+        // Si todo va bien actualizaremos el articulo donde subiremos la imagen
+        // Recoger id del cliente a editar
+        let articuloId = req.params.id;
+
+        // Buscar y actualizar artículo
+        Articulo.findOneAndUpdate({ _id: articuloId }, { imagen: req.file.filename }, { new: true })
+            .then((articuloActualizado) => {
+                // Si no se encuentran articulos
+                if (!articuloActualizado) {
+                    return res.status(500).json({
+                        status: "Error",
+                        mensaje: "Error al actualizar",
+                    });
+                }
+
+                // Devolver respuesta
+                return res.status(200).json({
+                    status: "Success",
+                    articulo: articuloActualizado,
+                    fichero: req.file
+                });
+            })
+            .catch((error) => {
+                return res.status(400).json({
+                    status: "Error",
+                    mensaje: error.toString(),
+                });
+            });
+    }
 }
+
+
 
 module.exports = {
     prueba,
@@ -237,5 +300,6 @@ module.exports = {
     listar,
     uno,
     borrar,
-    editar
+    editar,
+    subir
 }
