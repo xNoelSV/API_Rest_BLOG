@@ -293,11 +293,11 @@ const subir = (req, res) => {
 }
 
 const imagen = (req, res) => {
-    let id = req.params.fichero;
+    let nombreImagen = req.params.fichero;
 
-    Article.findById(id)
+    Articulo.findOne({ imagen: nombreImagen })
         .then((articulo) => {
-            if (error || !article) {
+            if (!articulo) {
                 return res.status(404).json({
                     status: "error",
                     message: "No existe el articulo"
@@ -307,13 +307,14 @@ const imagen = (req, res) => {
             let filePath = "./imagenes/articulos/" + articulo.imagen;
 
             fs.stat(filePath, (error, exists) => {
-                if (exists) {
-                    return res.sendFile(path.resolve(filePath));
-                } else {
+                if (!exists) {
                     return res.status(404).json({
                         status: "error",
+                        articulo: articulo.imagen,
                         mensaje: "La imagen no existe"
                     });
+                } else {
+                    return res.sendFile(path.resolve(filePath));
                 }
             });
         })
@@ -325,6 +326,44 @@ const imagen = (req, res) => {
         });
 }
 
+const buscar = async (req, res) => {
+    
+    // Sacar el string de busqueda
+    let busqueda = req.params.busqueda
+    
+    // Find OR y puedes aplicar expresiones reg
+    await Articulo.find({
+        "$or": [
+            { "titulo": { "$regex": busqueda, "$options": "i" } },
+            { "contenido": { "$regex": busqueda, "$options": "i" } }
+        ]
+    })
+    .sort({ fecha: -1 }) // Orden
+    .exec() // Ejecutar consulta
+    .then((articulos) => {
+        // Si no se devuelven resultados
+        if (!articulos || articulos.length < 1) {
+            return res.status(404).json({
+                status: "error",
+                mensaje: "No hay articulos que coincidan"
+            })
+        }
+
+        // Devolver resultado
+        return res.status(200).json({
+            status: "success",
+            articulos
+        })
+    })
+    // Captura de errores
+    .catch((error) => {
+        return res.status(404).json({
+            status: "error",
+            mensaje: "Fallo la algo a la hora de realizarla busqueda "
+        })
+    });
+}
+
 module.exports = {
     prueba,
     curso,
@@ -334,5 +373,6 @@ module.exports = {
     borrar,
     editar,
     subir,
-    imagen
+    imagen,
+    buscar
 }
