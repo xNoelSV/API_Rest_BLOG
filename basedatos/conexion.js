@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const conexion = async() => {
 
     try {
-        await mongoose.connect("mongodb://localhost:27017/mi_blog");
+        await mongoose.connect("mongodb+srv://noelsava25:sa8ApXluKgyaZDgN@blog.otgkqmv.mongodb.net/mi_blog");
+        // await mongoose.connect("mongodb://localhost:27017/mi_blog");
 
         // Parámetros dentro de objeto // solo en caso de aviso
         // useNewUrlParser: true
